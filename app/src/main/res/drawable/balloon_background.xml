@@ -1,0 +1,25 @@
+<!-- res/drawable/balloon_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Main background -->
+    <item>
+        <shape
+            android:shape="rectangle">
+            <solid android:color="#648CFF"/> <!-- Background color of the balloon -->
+            <corners android:radius="8dp"/> <!-- Adjust the radius to change the roundness of the balloon -->
+        </shape>
+    </item>
+
+    <!-- Triangle (tail) at the bottom -->
+    <item
+        android:right="-10dp"
+        android:top="-10dp">
+        <rotate
+            android:fromDegrees="45">
+            <shape
+                android:shape="rectangle">
+                <solid android:color="#648CFF"/> <!-- Same color as the balloon background -->
+            </shape>
+        </rotate>
+    </item>
+</layer-list>
