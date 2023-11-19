@@ -36,7 +36,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
             holder.title.setText(cultureName); // 데이터를 항목에 설정
 
             // 이미지 로딩 라이브러리를 사용하여 이미지 설정
-            String imageUrl = "http://13.124.226.102:8080/image/" + position;
+            String imageUrl = "http://13.124.226.102:8080/gart/" + (position-1);
             Glide.with(holder.itemView.getContext())
                     .load(imageUrl)
                     .into(holder.img);

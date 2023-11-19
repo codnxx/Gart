@@ -73,22 +73,25 @@ public class InformationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 AlertDialog.Builder dlg = new AlertDialog.Builder(InformationActivity.this);
-                dlg.setTitle("카테고리를 선택해 주세요."); //제목
-                final String[] versionArray = new String[] {"공연","전시","행사"};
+                dlg.setTitle("카테고리를 선택해 주세요."); // 제목
+                final String[] categoryArray = new String[] {"공연", "전시", "행사"};
 
-                dlg.setSingleChoiceItems(versionArray, 0, new DialogInterface.OnClickListener() {
+                dlg.setSingleChoiceItems(categoryArray, 0, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        button.setText("카테고리");
+                        // 선택된 카테고리에 따라 서버에서 데이터를 가져오는 메서드 호출
+                        fetchCategoryData(categoryArray[which]);
                     }
                 });
-//                버튼 클릭시 동작
-                dlg.setPositiveButton("확인",new DialogInterface.OnClickListener(){
+
+                // 확인 버튼 클릭시 동작
+                dlg.setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        //토스트 메시지
-                        Toast.makeText(InformationActivity.this,"변경되었습니다.",Toast.LENGTH_SHORT).show();
+                        // 토스트 메시지
+                        Toast.makeText(InformationActivity.this, "변경되었습니다.", Toast.LENGTH_SHORT).show();
                     }
                 });
+
                 dlg.show();
             }
         });
@@ -96,7 +99,7 @@ public class InformationActivity extends AppCompatActivity {
     }
 
     private void fetchDataFromServer() {
-        String url = "http://13.124.226.102:8080/api/gart-data/culture-names"; // 서버 주소
+        String url = "http://13.124.226.102:8080/gart/culture-names"; // 서버 주소
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
                     @Override
@@ -126,6 +129,44 @@ public class InformationActivity extends AppCompatActivity {
         requestQueue.add(jsonArrayRequest);
     }
 
+    private void fetchCategoryData(String selectedCategory) {
+        String url = "http://13.124.226.102:8080/gart/culture-names?category=" + selectedCategory;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            List<String> cultureNames = new ArrayList<>();
+                            for (int i = 0; i < response.length(); i++) {
+                                String cultureName = response.getString(i);
+                                Log.d("Culture Name", cultureName);
+                                cultureNames.add(cultureName);
+                            }
+                            // 가져온 데이터를 리사이클러뷰 어댑터에 설정
+                            adapter.setData(cultureNames);
+                            // 어댑터 업데이트
+                            adapter.notifyDataSetChanged();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            // 에러 처리
+                            Log.e("JSON Parsing Error", e.toString());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // 에러 처리
+                Log.e("Volley Error", error.toString());
+            }
+        });
+
+        // 요청을 큐에 추가
+        requestQueue.add(jsonArrayRequest);
+        adapter.notifyDataSetChanged();
+    }
+
+
     private void initView() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -147,17 +188,21 @@ public class InformationActivity extends AppCompatActivity {
             case R.id.left:
                 break;
             case R.id.right:
-                break;
+                Intent intent = new Intent(this, CalendarActivity.class);
+                startActivity(intent);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
 
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        overridePendingTransition(R.anim.none, R.anim.left_to_right_exit);
+        startActivity(new Intent(InformationActivity.this, CalendarActivity.class));
+        overridePendingTransition(R.anim.right_to_left_enter, R.anim.right_to_left_exit);
     }
+
+
 }

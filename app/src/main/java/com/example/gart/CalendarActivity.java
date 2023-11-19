@@ -1,10 +1,15 @@
 package com.example.gart;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.CalendarView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +32,7 @@ public class CalendarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
-        overridePendingTransition(R.anim.left_to_right_enter, R.anim.none);
+        overridePendingTransition(R.anim.right_to_left_enter, R.anim.none);
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -41,10 +46,12 @@ public class CalendarActivity extends AppCompatActivity {
                 requestEventData(selectedDate);
             }
         });
+
+        initView();
     }
 
     private void requestEventData(String selectedDate) {
-        String url = "http://13.124.226.102:8080/api/events/range?date=" + selectedDate;
+        String url = "http://13.124.226.102:8080/events/range?date=" + selectedDate;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
@@ -84,6 +91,37 @@ public class CalendarActivity extends AppCompatActivity {
 
 
         requestQueue.add(jsonArrayRequest);
+    }
+
+    private void initView() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.toolbarlayout, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.left:
+                Intent intent = new Intent(this, InformationActivity.class);
+                startActivity(intent);
+                return true;
+            case R.id.right:
+                Intent intent2 = new Intent(this, ChatbotActivity.class);
+                startActivity(intent2);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void showToast(String message) {
