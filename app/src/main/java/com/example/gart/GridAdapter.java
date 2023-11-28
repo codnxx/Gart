@@ -37,6 +37,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
             // 이미지 로딩 라이브러리를 사용하여 이미지 설정
             String imageUrl = "http://13.124.226.102:8080/gart/" + (position-1);
+            System.out.println(position-1);
             Glide.with(holder.itemView.getContext())
                     .load(imageUrl)
                     .into(holder.img);
@@ -50,7 +51,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return 5; // 항목 수를 변경하려면 원하는 숫자로 수정
+        return 7; // 항목 수를 변경하려면 원하는 숫자로 수정
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

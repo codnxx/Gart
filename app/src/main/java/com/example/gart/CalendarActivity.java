@@ -51,7 +51,7 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
     private void requestEventData(String selectedDate) {
-        String url = "http://13.124.226.102:8080/events/range?date=" + selectedDate;
+        String url = "http://13.124.226.102:8080/gart/event?date=" + selectedDate;
 
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest
                 (Request.Method.GET, url, null, new Response.Listener<JSONArray>() {

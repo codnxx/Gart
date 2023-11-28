@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import android.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.ActionBar;
@@ -42,6 +43,9 @@ public class InformationActivity extends AppCompatActivity {
     private GridAdapter adapter;
     private RequestQueue requestQueue;
     private Button button;
+    private SearchView searchView;
+    private List<String> cultureNames;
+    private int selectedCategoryIndex = 0; // 선택된 카테고리의 인덱스를 저장할 변수
 
     public static Intent newIntent(Context context) {
         return new Intent(context, InformationActivity.class);
@@ -76,17 +80,19 @@ public class InformationActivity extends AppCompatActivity {
                 dlg.setTitle("카테고리를 선택해 주세요."); // 제목
                 final String[] categoryArray = new String[] {"공연", "전시", "행사"};
 
-                dlg.setSingleChoiceItems(categoryArray, 0, new DialogInterface.OnClickListener() {
+                dlg.setSingleChoiceItems(categoryArray, selectedCategoryIndex, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // 선택된 카테고리에 따라 서버에서 데이터를 가져오는 메서드 호출
-                        fetchCategoryData(categoryArray[which]);
+                        // 선택된 카테고리의 인덱스를 업데이트
+                        selectedCategoryIndex = which;
                     }
                 });
 
                 // 확인 버튼 클릭시 동작
                 dlg.setPositiveButton("확인", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        // 선택된 카테고리에 따라 서버에서 데이터를 가져오는 메서드 호출
+                        fetchCategoryData(categoryArray[selectedCategoryIndex]);
                         // 토스트 메시지
                         Toast.makeText(InformationActivity.this, "변경되었습니다.", Toast.LENGTH_SHORT).show();
                     }
@@ -96,6 +102,85 @@ public class InformationActivity extends AppCompatActivity {
             }
         });
 
+
+        searchView = findViewById(R.id.searchView);  // 추가된 부분
+        searchView.requestFocus();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.d("Search", "Query Text Change: " + newText);
+                fetchSearchData(newText); // Updated this line
+                return true;
+            }
+        });
+
+        button = (Button) findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder dlg = new AlertDialog.Builder(InformationActivity.this);
+                dlg.setTitle("카테고리를 선택해 주세요."); // 제목
+                final String[] categoryArray = new String[] {"공연", "전시", "행사"};
+
+                dlg.setSingleChoiceItems(categoryArray, selectedCategoryIndex, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 선택된 카테고리의 인덱스를 업데이트
+                        selectedCategoryIndex = which;
+                    }
+                });
+
+                // 확인 버튼 클릭시 동작
+                dlg.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // 선택된 카테고리에 따라 서버에서 데이터를 가져오는 메서드 호출
+                        fetchCategoryData(categoryArray[selectedCategoryIndex]);
+                        // 토스트 메시지
+                        Toast.makeText(InformationActivity.this, "변경되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                dlg.show();
+            }
+        });
+    }
+
+    private void fetchSearchData(String keyword) {
+        String url = "http://13.124.226.102:8080/gart/culture-names?keyword=" + keyword;
+
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            List<String> filteredList = new ArrayList<>();
+                            for (int i = 0; i < response.length(); i++) {
+                                String cultureName = response.getString(i);
+                                Log.d("Culture Name", cultureName);
+                                filteredList.add(cultureName);
+                            }
+
+                            // Set the filtered data to the adapter
+                            adapter.setData(filteredList);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.e("JSON Parsing Error", e.toString());
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Volley Error", error.toString());
+            }
+        });
+
+        requestQueue.add(jsonArrayRequest);
     }
 
     private void fetchDataFromServer() {
